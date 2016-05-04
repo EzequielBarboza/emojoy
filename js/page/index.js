@@ -1,6 +1,7 @@
 import "regenerator/runtime";
 import ChatView from "./views/Chat";
 import GlobalWarningView from "./views/GlobalWarning";
+import SpinnerView from "./views/Spinner";
 import MessageInputView from "./views/MessageInput";
 import * as chatStore from "../chatStore";
 import toMessageObj from "../toMessageObj";
@@ -83,6 +84,10 @@ class MainController {
   }
 
   async onSend(message) {
+    const spinner = new SpinnerView();
+    this.messageInputView.form.appendChild(spinner.container);
+    spinner.show();
+    return;
     this.messageInputView.resetInput();
     const tempId = Date.now() + Math.random();
     const newMessage = {
