@@ -21,13 +21,15 @@ self.addEventListener("install", event => {
     }).then(cache => {
       return Promise.all([
         '/',
-        '/static/css/app.css',
-        '/static/fonts/roboto.woff'
-      ].map(url => {
+        '/static/css/app.css'
+      ].map((url, i) => {
         let request = new Request(url, {credentials: 'include'});
         return fetch(request).then(response => {
           if (!response.ok) throw Error("NOT OK");
-          return cache.put(request, response);
+          if (i === 0) {
+            return cache.put('/offline-dfa4251e.html', response);
+          }
+          return cache.put('/styles-58ca9bf2.css', response);
         });
       }));
     })
@@ -51,6 +53,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
+      .then(r => r || caches.match('/offline-dfa4251e.html'))
   );
 });
 
