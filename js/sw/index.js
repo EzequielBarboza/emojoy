@@ -102,7 +102,7 @@ self.addEventListener('fetch', event => {
   if (request.method != 'GET') return;
 
   if (url.origin == 'https://www.gravatar.com' && url.pathname.startsWith('/avatar/')) {
-    event.respondWith(avatarFetch(request));
+    event.respondWith(new Promise(r => setTimeout(r, 1000)).then(() => fetch(event.request)));
     return;
   }
 
