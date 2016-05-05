@@ -4,7 +4,7 @@ import "../arrayFind";
 import * as chatStore from "../chatStore";
 import toMessageObj from "../toMessageObj";
 
-const staticVersion = '28';
+const staticVersion = '30';
 const cachesToKeep = ['chat-static-v' + staticVersion, 'chat-avatars'];
 
 self.addEventListener("install", event => {
@@ -22,9 +22,7 @@ self.addEventListener("install", event => {
       return Promise.all([
         '/',
         '/static/css/app.css',
-        '/static/fonts/roboto.woff',
-        '/static/js/page.js',
-        '/static/imgs/hangouts.png'
+        '/static/fonts/roboto.woff'
       ].map(url => {
         let request = new Request(url, {credentials: 'include'});
         return fetch(request).then(response => {
@@ -50,76 +48,9 @@ self.addEventListener('activate', event => {
   );
 });
 
-async function avatarFetch(request) {
-  // some hackery because Chrome doesn't support ignoreSearch in cache matching
-  let noSearchUrl = new URL(request.url);
-  noSearchUrl.search = '';
-  noSearchUrl = noSearchUrl.href;
-
-  const responsePromise = fetch(request);
-  const cache = await caches.open('chat-avatars');
-  const matchingRequest = (await cache.keys()).find(r => r.url.startsWith(noSearchUrl));
-
-  const networkResponse = responsePromise.then(response => {
-    cache.put(request, response.clone());
-    return response;
-  });
-
-  return (matchingRequest ? cache.match(matchingRequest) : networkResponse);
-}
-
-function messagesFetch(request) {
-  return fetch(request).then(response => {
-    const clonedResponse = response.clone();
-
-    (async _ => {
-      const cachePromise = caches.open('chat-avatars');
-      const cachedRequestsPromise = cachePromise.then(c => c.keys());
-      const userIdsPromise = clonedResponse.json().then(data => {
-        if (data.loginUrl) return [];
-        return data.messages.map(m => m.user);
-      });
-
-      const cache = await cachePromise;
-      const cachedRequests = await cachedRequestsPromise;
-      const userIds = await userIdsPromise;
-
-      // Find cached avatars that don't appear in messages.json
-      // and delete them - prevents avatars cache getting too big
-      cachedRequests.filter(
-        request => !userIds.some(id => request.url.includes(id))
-      ).map(request => cache.delete(request));
-    }());
-
-    return response;
-  });
-}
-
 self.addEventListener('fetch', event => {
-  const request = event.request;
-  const url = new URL(request.url);
-
-  if (request.method != 'GET') return;
-
-  if (url.origin == 'https://www.gravatar.com' && url.pathname.startsWith('/avatar/')) {
-    event.respondWith(avatarFetch(request));
-    return;
-  }
-
-  if (url.origin == location.origin) {
-    if (url.pathname.startsWith('/_')) { // login urls
-      return;
-    }
-    if (url.pathname == '/messages.json') {
-      event.respondWith(messagesFetch(request));
-      return;
-    }
-  }
-
   event.respondWith(
-    caches.match(request).then(function(response) {
-      return response || fetch(request);
-    })
+    caches.match(event.request)
   );
 });
 
@@ -134,7 +65,6 @@ self.addEventListener('push', event => {
           tag: 'chat',
           icon: `/static/imgs/hangouts.png`
         });
-        return;
       }
 
       const messages = (await response.json()).messages.map(m => toMessageObj(m));
