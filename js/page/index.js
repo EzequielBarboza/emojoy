@@ -111,10 +111,6 @@ class MainController {
       credentials: 'include'
     }).then(r => r.json());
 
-
-    await this.mergeCachedMessages();
-    this.chatView.mergeMessages(await chatStore.getOutbox());
-
     const data = await dataPromise;
 
     if (data.loginUrl) {
@@ -124,7 +120,7 @@ class MainController {
 
     const messages = data.messages.map(m => toMessageObj(m));
 
-    chatStore.setChatMessages(messages);
+    //chatStore.setChatMessages(messages);
     this.chatView.mergeMessages(messages);
   }
 
