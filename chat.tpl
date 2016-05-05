@@ -2,10 +2,10 @@
 <html><head>
   <title>Emojoy!</title>
   <meta name="viewport" content="width=device-width">
-  <meta name="theme-color" content="#9C27B0">
+  <!--<meta name="theme-color" content="#9C27B0">
   <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" href="/static/imgs/hangouts.png" sizes="42x42">
-  <link href="/static/css/app.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/static/imgs/hangouts.png" sizes="42x42">-->
+  <link href="/styles-58ca9bf2.css" rel="stylesheet">
 </head><body>
   <div class="layout">
     <header class="toolbar">
@@ -20,5 +20,6 @@
   </div>
   <script>
     var userId = '{{user_id}}';
+    navigator.serviceWorker.register('/sw.js');
   </script>
 </body></html>
