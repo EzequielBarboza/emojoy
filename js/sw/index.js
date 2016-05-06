@@ -4,7 +4,7 @@ import "../arrayFind";
 import * as chatStore from "../chatStore";
 import toMessageObj from "../toMessageObj";
 
-const staticVersion = '30';
+const staticVersion = '31';
 const cachesToKeep = ['chat-static-v' + staticVersion, 'chat-avatars'];
 
 self.addEventListener("install", event => {
@@ -51,6 +51,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.url.endsWith('manifest.json')) return;
+  if (event.request.url.endsWith('hangouts.png')) return;
+  
   event.respondWith(
     caches.match(event.request)
       .then(r => r || caches.match('/offline-dfa4251e.html'))
