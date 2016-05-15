@@ -4,12 +4,11 @@ import "../arrayFind";
 import * as chatStore from "../chatStore";
 import toMessageObj from "../toMessageObj";
 
-const staticVersion = '31';
-const cachesToKeep = ['chat-static-v' + staticVersion, 'chat-avatars'];
+const staticVersion = '1';
+const cachesToKeep = ['static-v' + staticVersion, 'avatars'];
 
 self.addEventListener("install", event => {
-  self.skipWaiting();
-
+  //self.skipWaiting();
   event.waitUntil(
     fetch('/messages.json', {credentials: 'include'}).then(r => r.json()).then(data => {
       if (data.loginUrl) {
@@ -17,10 +16,10 @@ self.addEventListener("install", event => {
         registration.unregister();
         throw Error("Needs login");
       }
-      return caches.open('chat-static-v' + staticVersion);
+      return caches.open('static-v' + staticVersion);
     }).then(cache => {
       return Promise.all([
-        '/',
+        '/offline',
         '/static/css/app.css'
       ].map((url, i) => {
         let request = new Request(url, {credentials: 'include'});
@@ -36,27 +35,12 @@ self.addEventListener("install", event => {
   );
 });
 
-
-self.addEventListener('activate', event => {
-  clients.claim();
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames
-          .filter(n => cachesToKeep.indexOf(n) === -1)
-          .map(name => caches.delete(name))
-      );
-    })
-  );
-});
-
 self.addEventListener('fetch', event => {
-  if (event.request.url.endsWith('manifest.json')) return;
-  if (event.request.url.endsWith('hangouts.png')) return;
-  
+  if (event.request.url.includes('.map')) return;
   event.respondWith(
     caches.match(event.request)
-      .then(r => r || caches.match('/offline-dfa4251e.html'))
+      .then(r => r || fetch(event.request))
+      .catch(() => caches.match('/offline-dfa4251e.html'))
   );
 });
 

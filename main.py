@@ -157,6 +157,12 @@ def root():
         user_id=get_user_id(users.get_current_user()),
         logout_url=users.create_logout_url('/')
     )
+    
+@get('/offline')
+def offline():
+    return template_with_sender_id(
+        'offline'
+    )
 
 
 @get('/messages.json')

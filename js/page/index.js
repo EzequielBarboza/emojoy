@@ -52,6 +52,7 @@ class MainController {
   }
 
   onServiceWorkerControllerChange() {
+    return;
     if (this.messageInputView.inputIsEmpty()) {
       if (this.reloading) return;
       this.reloading = true;
